@@ -1,0 +1,28 @@
+{
+  "name": "react_webpack",
+  "version": "0.0.1",
+  "description": "A tutorial on using webpack with react",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prestart": "npm install",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harryganz/react_webpack_tutorial.git"
+  },
+  "author": "Harry Ganz <hganz@harryganz.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/harryganz/react_webpack_tutorial/issues"
+  },
+  "homepage": "https://github.com/harryganz/react_webpack_tutorial#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "morgan": "^1.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.9.2"
+  }
+}

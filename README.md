@@ -129,3 +129,113 @@ You can write an npm script to run the bundler automatically. At this point it d
 ```
 
 Now all you need to do is run ```npm run bundle``` to run the webpack bundler.
+
+### Step-2 Using Webpack with React
+
+We already did all of the configuration we need to get webpack to work with React. The .babelrc file includes both the es2015 and react plugins. So all we need to do is install the react and react-dom plugins, write some components, and include them in our assets folder.
+
+First, we need to install react and react-dom so we can use react functions in our source code:
+```
+npm install react react-dom --save
+```
+
+We should probably change our landing page to have a div that React can render to.
+```
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React Webpack Tutorial</title>
+  <script src="/js/app.js" charset="utf-8"></script>
+</head>
+<body>
+  <div id="container"></div>
+</body>
+</html>
+```
+
+Now, let's write a very simple component in React using ES6 syntax. I like to put my components in a sub-folder of assets/js called (shockingly) components, and I usually have a top-level component called something unimaginative, like app-component.js.
+
+```
+// assets/js/components/app-component.js
+
+// CommonJS import statement and ES6
+// destructuring assignment
+// equivalent to var Component = require('react').Component
+// var React = require('react')
+import React, {Component} from 'react';
+
+// Uses new ES6 class keyword to define a
+// JS constructor that has React.Component as its
+// Prototype
+// In ES5: var App = React.createClass({});
+class App extends Component {
+
+  // Similar to componentWillMount in React.createClass
+  constructor(props) {
+    super(props);
+
+    // Similar to getInitialState in React.createClass
+    this.state = {
+      currentColorIndex: 0,
+      colors: ['#f00', '#0f0', '#00f', '#fff']
+    }
+  }
+
+  // The 'this' scope is bound at runtime in user defined functions,
+  // must be manually bound to prevent unexpected behavior
+  changeColor() {
+    let index = this.state.currentColorIndex % 4;
+    this.refs.container.style.backgroundColor =  this.state.colors[index];
+    this.setState({currentColorIndex: index+1});
+  }
+
+  // ES5 version this.render = function(){};
+  render() {
+    return (
+      // JSX - compiles to Javascript
+      <div
+        onClick={ this.changeColor.bind(this) }
+        ref="container"
+        style={ {padding: '1em 0.5em', cursor: 'pointer'} }
+      >
+        <h3>Congratulations on getting webpack and react working</h3>
+        <p> Click Me!</p>
+      </div>
+    );
+  }
+}
+
+// Make App available to module loader
+module.exports = App;
+```
+
+Now that we have a component, we should change our entry point (assets/index.js) to render it to the DOM.
+```
+// assets/index.js
+
+// Import react and react-dom using CommonJS module loading and ES6
+// Without a path, searches in node_modules
+// destructuring assignment
+import React from 'react'; // => var React = require('react')
+import {render} from 'react-dom'; // => var render = require('react-dom').render
+
+import App from './components/app-component'; // Local import
+
+window.onload = function(){
+  // Entry point, renders to DOM
+  render (
+    <App />,
+    document.getElementById("container")
+  );
+};
+```
+
+Finally we are ready to run the bundler, and restart our server:
+```
+node webpack.config.js
+npm start
+```
+
+Visit http://localhost:3000/, you should see a div that says "Congratulations on getting webpack and react working" and that changes colors when you click on it. If you don't, checkout step-2 ```git checkout step-2``` and find out where you went wrong.

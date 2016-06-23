@@ -1,8 +1,15 @@
-const printMessage = () => `
-You have successfully configured webpack and babel
-`;
+// Import react and react-dom using CommonJS module loading and ES6
+// Without a path, searches in node_modules
+// destructuring assignment
+import React from 'react'; // => var React = require('react')
+import {render} from 'react-dom'; // => var render = require('react-dom').render
 
-window.onload = () => {
-  let $h3 = document.getElementsByTagName('h3')[0];
-  $h3.innerHTML = printMessage();
-}
+import App from './components/app-component'; // Local import
+
+window.onload = function(){
+  // Entry point, renders to DOM
+  render (
+    <App />,
+    document.getElementById("container")
+  );
+};

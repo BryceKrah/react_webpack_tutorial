@@ -303,7 +303,7 @@ node webpack.config.js watch
 ```
 Now it should re-run the bundler and restart the server every time a file is changed.
 
-*Optional: Run npm script*
+**Optional: Run npm script**
 
 If you added the npm script in step-1, you can invoke the watcher thusly:
 ```

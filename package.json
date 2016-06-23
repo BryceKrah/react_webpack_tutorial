@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prestart": "npm install",
     "start": "node server.js",
-    "bundle": "webpack"
+    "bundle": "node webpack.config.js"
   },
   "repository": {
     "type": "git",

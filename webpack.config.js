@@ -1,8 +1,9 @@
 'use strict';
 
+const webpack = require('webpack');
 const path = require('path');
 
-module.exports = {
+webpack({
   entry: path.join(__dirname, 'assets/js/index.js'), // Entry point for application
   output: {
     path: path.join(__dirname, 'public/js'), // exit directory
@@ -17,4 +18,9 @@ module.exports = {
       }
     ]
   }
-}
+}, (err, stats) => {
+  if(err)
+       return console.log(err);
+   console.log(stats.toString({errors: true, warnings: true, colors: true}));
+   console.log('\nBundling Complete\n');
+});

@@ -24,7 +24,7 @@ npm install
 Step 0 has the basic file structure and an express server, but nothing else. You can check if it is working by running ```npm start``` and
 visiting http://localhost:3000/ in your browser.
 
-### Step-0: Installing and configuring Webpack
+### Step-1: Installing and configuring Webpack
 
 The first thing you need to do is set up and configure web-pack. Webpack uses loaders, which take an input file(s), transform them, and produce an ouput file(s) and plugins which set options and do additonal transformations on top of the loader.
 
@@ -37,9 +37,10 @@ Next, we need to configure webpack. The best way to do this is to make a webpack
 // webpack.config.js
 'use strict';
 
+const webpack = require('webpack');
 const path = require('path');
 
-module.exports = {
+webpack({
   entry: path.join(__dirname, 'assets/js/index.js'), // Entry point for application
   output: {
     path: path.join(__dirname, 'public/js'), // exit directory
@@ -54,7 +55,12 @@ module.exports = {
       }
     ]
   }
-}
+}, (err, stats) => {
+  if(err)
+       return console.log(err);
+   console.log(stats.toString({errors: true, warnings: true, colors: true}));
+   console.log('\nBundling Complete\n');
+});
 ```
 
 We need to also set up babel to use the es2015 and react plugins so the loader will work. Make a .babelrc file in the root of the project with the following json:
@@ -101,7 +107,7 @@ Now let's add a script tag to the body public/index.html:
 
 Finally, let's run the bundler and restart the server:
 ```
-node ./node_modules/webpack/bin/webpack.js
+node webpack.config.js
 npm start
 ```
 
@@ -109,7 +115,7 @@ If you visit http://localhost:3000/ you should see the message: "You have succes
 
 **Optional: npm bundling script**
 
-I imagine typing ```node ./node_modules/webpack/bin/webpack.js``` can get a bit annoying, and I will cover hot-loading in a bit, but we should probably write an npm script to handle it. Add the following to the scripts section of the package.json file in the root of the project:
+You can write an npm script to run the bundler automatically. At this point it doesn't really do anything special. Add the following to package.json:
 ```
 // package.json
 // Stuff
@@ -117,7 +123,7 @@ I imagine typing ```node ./node_modules/webpack/bin/webpack.js``` can get a bit 
   "test": "echo \"Error: no test specified\" && exit 1",
   "prestart": "npm install",
   "start": "node server.js",
-  "bundle": "webpack" // <-- ADD THIS LINE
+  "bundle": "node webpack.config.js" // <-- ADD THIS LINE
 },
 // More stuff
 ```

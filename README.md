@@ -130,7 +130,7 @@ You can write an npm script to run the bundler automatically. At this point it d
 
 Now all you need to do is run ```npm run bundle``` to run the webpack bundler.
 
-### Step-2 Using Webpack with React
+### Step-2: Using Webpack with React
 
 We already did all of the configuration we need to get webpack to work with React. The .babelrc file includes both the es2015 and react plugins. So all we need to do is install the react and react-dom plugins, write some components, and include them in our assets folder.
 
@@ -239,3 +239,73 @@ npm start
 ```
 
 Visit http://localhost:3000/, you should see a div that says "Congratulations on getting webpack and react working" and that changes colors when you click on it. If you don't, checkout step-2 ```git checkout step-2``` and find out where you went wrong.
+
+## Step-3: Watching for changes
+
+Having to run the bundler manually after every change and restart the server can quickly become a chore, so using watchers is a very good idea.
+
+First, install nodemon globally. It will restart the server every time a file changes in the application directory.
+```
+npm install -g nodemon
+```
+* *Some Linux distributions might require a ```sudo npm install -g nodemon```.*
+
+Next, we need to add a watch option to our webpack config. The basic configuration remains the same, but now we run the watched version when the watch command line argument is present.
+
+```
+// webpack.config.js
+'use strict';
+
+const webpack = require('webpack');
+const path = require('path');
+
+var args = process.argv; // Get command line arguments
+
+var config = webpack({
+  entry: path.join(__dirname, 'assets/js/index.js'), // Entry point for application
+  output: {
+    path: path.join(__dirname, 'public/js'), // exit directory
+    filename: 'app.js' //exit file
+  },
+  module: {
+    loaders: [
+      {
+        loader: 'babel',
+        test: /\.js?$/, // Filetype handled by this loader
+        include: path.join(__dirname, 'assets') //only look in assets folder
+      }
+    ]
+  }
+});
+
+var logger = (err, stats) => {
+  if(err)
+       return console.log(err);
+   console.log(stats.toString({errors: true, warnings: true, colors: true}));
+   console.log('\nBundling Complete\n');
+};
+
+if(args.find((el) => el === 'w' || el === 'watch')) {
+  config.watch({
+    aggregateTimeout: 300, // Wait 300ms after changes before running
+  }, logger);
+} else {
+  config.run(logger);
+}
+```
+Check that it is working by opening two new terminal windows. In one run nodemon, which restarts the server on changes:
+```
+nodemon
+```
+In the other run webpack with the watch option:
+```
+node webpack.config.js watch
+```
+Now it should re-run the bundler and restart the server every time a file is changed.
+
+**Optional: Run npm script**
+
+If you added the npm script in step-1, you can invoke the watcher thusly:
+```
+npm run bundle -- watch
+```

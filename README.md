@@ -309,3 +309,71 @@ If you added the npm script in step-1, you can invoke the watcher thusly:
 ```
 npm run bundle -- watch
 ```
+
+### Step 4: Adding Minification
+
+Webpack has a built-in uglify plugin that allows you to minify code. This is great for production code, and usually reduces the javascript payload by more than half. It is easy to use, but requires us to change our webpack configuration yet again.
+
+```
+'use strict';
+
+const webpack = require('webpack');
+const path = require('path');
+
+var args = process.argv; // Get command line arguments
+
+var config = {
+  entry: path.join(__dirname, 'assets/js/index.js'), // Entry point for application
+  output: {
+    path: path.join(__dirname, 'public/js'), // exit directory
+    filename: 'app.js' //exit file
+  },
+  module: {
+    loaders: [
+      {
+        loader: 'babel',
+        test: /\.js?$/, // Filetype handled by this loader
+        include: path.join(__dirname, 'assets') //only look in assets folder
+      }
+    ]
+  }
+}
+
+// Add minification if minify or m is in command line args
+if(args.find(el => el === 'm' || el === 'minify')) {
+  config.plugins = [
+         new webpack.optimize.UglifyJsPlugin({
+             compress: {
+                 screw_ie8: true,
+                 warnings: false
+             }
+         })
+     ];
+}
+
+var bundler = webpack(config);
+
+var logger = (err, stats) => {
+  if(err)
+       return console.log(err);
+   console.log(stats.toString({errors: true, warnings: true, colors: true}));
+   console.log('\nBundling Complete\n');
+};
+
+// Add watcher if watch or w in command line arguments
+if(args.find((el) => el === 'w' || el === 'watch')) {
+  bundler.watch({
+    aggregateTimeout: 300, // Wait 300ms after changes before running
+  }, logger);
+} else {
+  bundler.run(logger);
+}
+```
+
+Now, adding the command line argument "m" or "minify" will produce a minified js file, and leaving it out will bundle the file, but not minify it. To test it out, try
+```
+node webpack.config.js m
+```
+and take a look at the unreadable minified output in public/app.js.
+
+If you have been making the npm scripts in the optional sections, try ```npm run bundle -- m```

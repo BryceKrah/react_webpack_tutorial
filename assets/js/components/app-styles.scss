@@ -1,0 +1,8 @@
+.clickable {
+  padding: 1em;
+  cursor: pointer;
+
+  &:after {
+    content: "Looks like you also got SASS working!";
+  }
+}

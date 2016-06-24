@@ -377,3 +377,154 @@ node webpack.config.js m
 and take a look at the unreadable minified output in public/app.js.
 
 If you have been making the npm scripts in the optional sections, try ```npm run bundle -- m```
+
+### Step-5: Webpack With Sass
+
+Webpack has a strange relationship with css. It only understands javascript, so you must require your css in javascript for it to use it, and, instead of writing to an external stylesheet, it actually writes the css into the bundled javascript, then loads it as an embedded stylesheet on the DOM when the page loads. This sounds insane, but there is actually some good reasoning behind it. While frameworks like React and Angular have been making front-end javascript more and more modular, external stylesheets have remained monolithic. This often leads to "dead code" as some styles are changed and others are no longer referenced. Webpack has resolved this by allowing you to import only the styles you need for a particular component.
+
+First we need to install style-loader, css-loader, node-sass and sass-loader:
+```
+npm install style-loader css-loader node-sass sass-loader --save
+```
+
+Next we should change out webpack.config.js to use these loaders:
+```
+// webpack.config.js
+'use strict';
+
+const webpack = require('webpack');
+const path = require('path');
+
+var args = process.argv; // Get command line arguments
+
+var config = {
+  entry: path.join(__dirname, 'assets/js/index.js'), // Entry point for application
+  output: {
+    path: path.join(__dirname, 'public/js'), // exit directory
+    filename: 'app.js' //exit file
+  },
+  module: {
+    loaders: [
+      {
+        loader: 'babel',
+        test: /\.js?$/, // Filetype handled by this loader
+        include: path.join(__dirname, 'assets') //only look in assets folder
+      },
+      {
+        loaders: ["style", "css", "sass"], // Multiple loaders in one line
+        test: /\.scss$/
+      }
+    ]
+  }
+}
+
+// Add minification if minify or m is in command line args
+if(args.find(el => el === 'm' || el === 'minify')) {
+  config.plugins = [
+         new webpack.optimize.UglifyJsPlugin({
+             compress: {
+                 screw_ie8: true,
+                 warnings: false
+             }
+         })
+     ];
+}
+
+var bundler = webpack(config);
+
+var logger = (err, stats) => {
+  if(err)
+       return console.log(err);
+   console.log(stats.toString({errors: true, warnings: true, colors: true}));
+   console.log('\nBundling Complete\n');
+};
+
+// Add watcher if watch or w in command line arguments
+if(args.find((el) => el === 'w' || el === 'watch')) {
+  bundler.watch({
+    aggregateTimeout: 300, // Wait 300ms after changes before running
+  }, logger);
+} else {
+  bundler.run(logger);
+}
+```
+
+Now that webpack can understand sass, let's add some sass to our project. Add a file called app-styles.scss to the components folder and put the following in it:
+```
+/assets/js/components/app-styles.scss
+.clickable {
+  padding: 1em;
+  cursor: pointer;
+
+  &:after {
+    content: "Looks like you also got SASS working!";
+  }
+}
+```
+
+Then change the component to use new stylesheet:
+```
+// CommonJS import statement and ES6
+// destructuring assignment
+// equivalent to var Component = require('react').Component
+// var React = require('react')
+import React, {Component} from 'react';
+
+// Stylesheet import using the css and styles loader
+require("./app-styles.scss");
+
+// Uses new ES6 class keyword to define a
+// JS constructor that has React.Component as its
+// Prototype
+// In ES5: var App = React.createClass({});
+class App extends Component {
+
+  // Similar to componentWillMount in React.createClass
+  constructor(props) {
+    super(props);
+
+    // Similar to getInitialState in React.createClass
+    this.state = {
+      currentColorIndex: 0,
+      colors: ['#f00', '#0f0', '#00f', '#fff']
+    }
+  }
+
+  // The 'this' scope is bound at runtime in user defined functions,
+  // must be manually bound to prevent unexpected behavior
+  changeColor() {
+    let index = this.state.currentColorIndex % 4;
+    this.refs.container.style.backgroundColor =  this.state.colors[index];
+    this.setState({currentColorIndex: index+1});
+  }
+
+  // ES5 version this.render = function(){};
+  render() {
+    return (
+      // JSX - compiles to Javascript
+      <div
+        onClick={ this.changeColor.bind(this) }
+        ref="container"
+        className="clickable"
+      >
+        <h3>Congratulations on getting webpack and react working</h3>
+        <p> Click Me!</p>
+      </div>
+    );
+  }
+}
+
+// Make App available to module loader
+module.exports = App;
+```
+
+Notice the new require statement. It will put the styles contained in that file into an embedded stylesheet. Also, don't forget to add the className, "clickable", to the div in the render function.
+
+If you already have the webpack watcher and nodemon running, you don't have to do anything else. Otherwise, run the following in separate console windows:
+```
+nodemon
+node webpack.config.js watch
+```
+
+Upon visiting http://localhost:3000/, you should now see "Looks like you got SASS working" added to the previous message.
+If you don't, checkout step-5 ```git checkout step-5``` and see what you might be missing.

@@ -4,6 +4,9 @@
 // var React = require('react')
 import React, {Component} from 'react';
 
+// Stylesheet import using the css and styles loader
+require("./app-styles.scss");
+
 // Uses new ES6 class keyword to define a
 // JS constructor that has React.Component as its
 // Prototype
@@ -34,9 +37,9 @@ class App extends Component {
     return (
       // JSX - compiles to Javascript
       <div
-        onClick={ this.changeColor.bind(this) } 
+        onClick={ this.changeColor.bind(this) }
         ref="container"
-        style={ {padding: '1em 0.5em', cursor: 'pointer'} }
+        className="clickable"
       >
         <h3>Congratulations on getting webpack and react working</h3>
         <p> Click Me!</p>

@@ -17,6 +17,10 @@ var config = {
         loader: 'babel',
         test: /\.js?$/, // Filetype handled by this loader
         include: path.join(__dirname, 'assets') //only look in assets folder
+      },
+      {
+        loaders: ["style", "css", "sass"], // Multiple loaders in one line
+        test: /\.scss$/
       }
     ]
   }

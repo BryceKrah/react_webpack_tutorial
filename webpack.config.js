@@ -26,19 +26,33 @@ var config = {
         test: /\.scss$/
       }
     ]
-  }
+  },
+  plugins: []
 }
 
 // Add minification if minify or m is in command line args
 if(args.find(el => el === 'm' || el === 'minify')) {
-  config.plugins = [
-         new webpack.optimize.UglifyJsPlugin({
-             compress: {
-                 screw_ie8: true,
-                 warnings: false
-             }
-         })
-     ];
+  config.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV':JSON.stringify('production')
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+         screw_ie8: true,
+         warnings: false
+      },
+      sourceMap: false // Do not produce a source map
+     })
+   );
+} else {
+  config.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('development')
+    }),
+    new webpack.SourceMapDevToolPlugin({ // Maps source files to bundled files
+      test: /\.js$/
+    })
+  )
 }
 
 var bundler = webpack(config);

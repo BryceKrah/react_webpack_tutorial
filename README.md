@@ -48,11 +48,14 @@ webpack({
   },
   module: {
     loaders: [
-      {
-        loader: 'babel',
-        test: /\.js?$/, // Filetype handled by this loader
-        include: path.join(__dirname, 'assets') //only look in assets folder
+    {
+      loader: 'babel',
+      test: /\.js?$/, // Filetype handled by this loader
+      include: path.join(__dirname, 'assets'), //only look in assets folder
+      query: {
+        presets: ['es2015','react']
       }
+    }
     ]
   }
 }, (err, stats) => {
@@ -63,17 +66,7 @@ webpack({
 });
 ```
 
-We need to also set up babel to use the es2015 and react plugins so the loader will work. Make a .babelrc file in the root of the project with the following json:
-```
-// .babelrc
-{
-  "presets": [
-    "es2015",
-    "react"
-  ]
-}
-```
-* Note: *You might need to enable hidden files on windows for this to work*
+The query property of each loader can be used to pass options to a loader. In this case, babel needs the es2015 preset to transpile es6 to es5, and the react preset to transplile JSX to javascript.
 
 Let's test it out by making an index.js file in assets/js writing some es6 in it, and including it on the landing page (public/index.html):
 ```
@@ -132,7 +125,7 @@ Now all you need to do is run ```npm run bundle``` to run the webpack bundler.
 
 ### Step-2: Using Webpack with React
 
-We already did all of the configuration we need to get webpack to work with React. The .babelrc file includes both the es2015 and react plugins. So all we need to do is install the react and react-dom plugins, write some components, and include them in our assets folder.
+We already did all of the configuration we need to get webpack to work with React. The query property includes both the es2015 and react presets. So all we need to do is install the react and react-dom plugins, write some components, and include them in our assets folder.
 
 First, we need to install react and react-dom so we can use react functions in our source code:
 ```
@@ -309,12 +302,24 @@ If you added the npm script in step-1, you can invoke the watcher thusly:
 ```
 npm run bundle -- watch
 ```
+It might also be a good idea to set up a dev server which will automatically run the bundler and restart the server every time you make a change to the source files.
+Install nodemon and concurrently locally:
+```
+npm install nodemon concurrently --save-dev
+```
+Then, add the following script to your package.json, in the scripts section:
+```
+"dev": "concurrently \"npm run bundle -- w\" \"nodemon server.js\""
+```
+Now, if you run ```npm run dev```, you can edit the source files and the changes will be instantly loaded.
 
 ### Step 4: Adding Minification
 
 Webpack has a built-in uglify plugin that allows you to minify code. This is great for production code, and usually reduces the javascript payload by more than half. It is easy to use, but requires us to change our webpack configuration yet again.
+You can also add a source map to the development version, so the stacktrace shows you line numbers in the source files, instead of in the bundled file.
 
 ```
+// webpack.config.js
 'use strict';
 
 const webpack = require('webpack');
@@ -333,22 +338,39 @@ var config = {
       {
         loader: 'babel',
         test: /\.js?$/, // Filetype handled by this loader
-        include: path.join(__dirname, 'assets') //only look in assets folder
+        include: path.join(__dirname, 'assets'), //only look in assets folder
+        query: {
+          presets: ['es2015','react']
+        }
       }
     ]
-  }
+  },
+  plugins: []
 }
 
 // Add minification if minify or m is in command line args
 if(args.find(el => el === 'm' || el === 'minify')) {
-  config.plugins = [
-         new webpack.optimize.UglifyJsPlugin({
-             compress: {
-                 screw_ie8: true,
-                 warnings: false
-             }
-         })
-     ];
+  config.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV':JSON.stringify('production')
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+         screw_ie8: true,
+         warnings: false
+      },
+      sourceMap: false // Do not produce a source map
+     })
+   );
+} else {
+  config.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('development')
+    }),
+    new webpack.SourceMapDevToolPlugin({ // Maps source files to bundled files
+      test: /\.js$/
+    })
+  )
 }
 
 var bundler = webpack(config);
@@ -408,26 +430,43 @@ var config = {
       {
         loader: 'babel',
         test: /\.js?$/, // Filetype handled by this loader
-        include: path.join(__dirname, 'assets') //only look in assets folder
+        include: path.join(__dirname, 'assets'), //only look in assets folder
+        query: {
+          presets: ['es2015','react']
+        }
       },
       {
         loaders: ["style", "css", "sass"], // Multiple loaders in one line
         test: /\.scss$/
       }
     ]
-  }
+  },
+  plugins: []
 }
 
 // Add minification if minify or m is in command line args
 if(args.find(el => el === 'm' || el === 'minify')) {
-  config.plugins = [
-         new webpack.optimize.UglifyJsPlugin({
-             compress: {
-                 screw_ie8: true,
-                 warnings: false
-             }
-         })
-     ];
+  config.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV':JSON.stringify('production')
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+         screw_ie8: true,
+         warnings: false
+      },
+      sourceMap: false // Do not produce a source map
+     })
+   );
+} else {
+  config.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('development')
+    }),
+    new webpack.SourceMapDevToolPlugin({ // Maps source files to bundled files
+      test: /\.js$/
+    })
+  )
 }
 
 var bundler = webpack(config);

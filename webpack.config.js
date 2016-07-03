@@ -14,7 +14,10 @@ webpack({
       {
         loader: 'babel',
         test: /\.js?$/, // Filetype handled by this loader
-        include: path.join(__dirname, 'assets') //only look in assets folder
+        include: path.join(__dirname, 'assets'), //only look in assets folder
+        query: {
+          presets: ['es2015','react']
+        }
       }
     ]
   }
